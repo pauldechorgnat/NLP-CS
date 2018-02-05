@@ -3,11 +3,15 @@
 Created on Tue Jan 30 21:51:20 2018
 
 @author: Paul
+
+https://arxiv.org/pdf/1411.2738.pdf
 """
 
 from __future__ import division
 import argparse
 import pandas as pd
+
+import datetime
 
 # useful stuff
 import numpy as np
@@ -39,8 +43,12 @@ class mySkipGram:
         # nEmbed is the number of neurons within the embedding layer
         # winSize is the size of the context
         # minCount is the minimum number of instances required for a word to be kept in the training data
-        
+        self.negativeRate = negativeRate
         self.nEmbed = nEmbed
+        self.winSize = winSize
+        self.minCount = minCount
+        
+        self.C = 2*winSize # length of context
         
          # defining a list of stopwords to get rid off
         stopwords = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours',
@@ -75,57 +83,75 @@ class mySkipGram:
         self.word_count = self.word_count[self.word_count >= minCount]
         # keeping only valid words
         valid_words = [word for word in self.word_count.index if word not in stopwords]
-        
         self.word_count = self.word_count.loc[valid_words].sort_values(ascending = False)
+                
+        # keeping the length of the vocabulary
+        self.V = len(valid_words)
         
         # defining a dictionary to match words with numbers
         self.dictionnary = {word: i for i, word in enumerate(self.word_count.index)}
         self.reverse_dictionnary = {i : word for i, word in enumerate(self.word_count.index)}
-        
+
         # getting rid off unnecessary words in sentences
         self.clean_sentences = [[self.dictionnary[word] for word in sentence if word in self.dictionnary.keys()]\
                                 for sentence in sentences]
         
-        self.pairs = [(word1, word2) for sentence in self.clean_sentences for i1, word1 in enumerate(sentence) for i2, word2 in enumerate(sentence) if (np.abs(i1-i2) <= winSize) and i1!=i2]
+        self.contexts = []
+        for sentence in self.clean_sentences:
+            for i1, target_word in enumerate(sentence):
+                self.contexts.append((target_word, [context_word for i2, context_word in enumerate(sentence) if (np.abs(i1-i2)<=winSize) and i1 != i2]))
         
-        self.length_of_voc = len(self.dictionnary.keys())
-        
-        self.counting_matrix = np.zeros((self.length_of_voc, self.length_of_voc))
-        
-        for pair in self.pairs:
-            self.counting_matrix[pair[0], pair[1]]+=1
-            
-        for i in range(self.length_of_voc):
-            sum_i = sum(self.counting_matrix[:,i])
-            self.counting_matrix[:,i]/=sum_i
-       
-        
-        #raise NotImplementedError('implement it!')
-    def softmax(self, x):
-        decreased_x = x - np.max(x)
-        return np.exp(decreased_x)/np.sum(np.exp(decreased_x))
-    
-    def mse(self, true_values, predictions):
-        return np.mean(np.power(true_values - predictions, 2))
+#        http://mccormickml.com/2017/01/11/word2vec-tutorial-part-2-negative-sampling/
+#        self.contingence_matrix = np.zeros((self.V, self.V))
+#        
+#        for target_word, context in self.contexts:
+#            for context_word in context :
+#                self.contingence_matrix[target_word, context_word] += 1
 
+        # we want to have a probability of creating negative samplings 
+        self.negative_probability = np.power(self.word_count, 3/4)
+        self.negative_probability /= np.sum(self.negative_probability)
+        self.negative_probability.index = [self.dictionnary[word] for word in self.negative_probability.index]
+        
+        # initializing weights 
+        self.input2hidden_weights = np.random.uniform(size = (self.V, self.nEmbed))
+        self.hidden2output_weights = np.random.uniform(size = (self.nEmbed, self.V))
+       
+    def create_negative_samples(self, context_word):
+        # http://mccormickml.com/2017/01/11/word2vec-tutorial-part-2-negative-sampling/        
+        negative_samples = np.random.choice(a = self.negative_probability.index,
+                                            p = self.negative_probability,
+                                            size =  self.negativeRate)
+        return [(context_word, 1)] + [(negative_word, 0) for negative_word in negative_samples]
+        
+    def sigmoid(self, x, y):
+        return 1/(1+np.exp(-np.sum(x*y.T)))
     def train(self,stepsize, epochs):
-        self.input_weight = np.random.uniform(size = (self.length_of_voc, self.nEmbed))
-        self.hidden_weight = np.random.uniform(size = (self.nEmbed, self.length_of_voc))
+        
         # running through the epochs
         for epoch in range(epochs):
-            # running through the training samples
-            for word in range(self.length_of_voc):
-                # creating the input vector
-                input_vector = np.zeros((1, self.length_of_voc))
-                input_vector[:,word] = 1
-                # getting the output vector
-                output_vector = self.counting_matrix[:,word].T
-                # computing output
-                first_step = np.dot(input_vector, self.input_weight)
-                second_step = np.dot(first_step, self.hidden_weight)
-                output_predictions = self.softmax(second_step)
-                error = self.mse(output_vector, output_predictions)
-        # raise NotImplementedError('implement it!')
+            if epoch % 10 == 0:
+                print("Epoch n° : {}/{} - {}".format(epoch, epochs, str(datetime.datetime.now())))
+            
+            # running through contexts
+            for target_word, context in self.contexts:
+                
+                h = self.input2hidden_weights[target_word,:]
+                # creating negative samples 
+                # !!!! there is something fuzzy : the world can be a negative and a positive sample here
+                for context_word in context:
+                    # generating negative samples
+                    training_outputs = self.create_negative_samples(context_word)
+                    # computing EH
+                    EH = np.sum([(self.sigmoid(self.hidden2output_weights[:,j], h) - tj)*self.hidden2output_weights[:,j] for j, tj in training_outputs], axis = 0)
+                    
+                    # updating output layer weights 
+                    for j, tj in training_outputs:
+                        self.hidden2output_weights[:,j] -= stepsize * (self.sigmoid(self.hidden2output_weights[:,j], h)-tj) * h.T
+                    
+                    # updating input layer wiegths
+                    self.input2hidden_weights[target_word, :] -= stepsize * EH.T
+                
 
     def save(self,path):
         raise NotImplementedError('implement it!')
@@ -171,4 +197,4 @@ path = "C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NL
 sentences = text2sentences(path)
 
 model = mySkipGram(sentences)
-model.word_count
+print("J'ai fini pour le moment")
