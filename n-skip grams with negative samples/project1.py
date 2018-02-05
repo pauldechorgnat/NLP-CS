@@ -15,7 +15,7 @@ from scipy.special import expit
 from sklearn.preprocessing import normalize
 
 
-__authors__ = ['author1','author2','author3']
+__authors__ = ['paul_dechorgnat','victor_terras-dober','dimitri_trotignon']
 __emails__  = ['fatherchristmoas@northpole.dk','toothfairy@blackforest.no','easterbunny@greenfield.de']
 
 def text2sentences(path):
@@ -40,6 +40,7 @@ class mySkipGram:
         # winSize is the size of the context
         # minCount is the minimum number of instances required for a word to be kept in the training data
         
+        self.nEmbed = nEmbed
         
          # defining a list of stopwords to get rid off
         stopwords = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours',
@@ -68,6 +69,8 @@ class mySkipGram:
         
         self.word_count = pd.Series(self.word_count)
         
+        
+        
         # getting rid of too rare words
         self.word_count = self.word_count[self.word_count >= minCount]
         # keeping only valid words
@@ -77,29 +80,34 @@ class mySkipGram:
         
         # defining a dictionary to match words with numbers
         self.dictionnary = {word: i for i, word in enumerate(self.word_count.index)}
+        self.reverse_dictionnary = {i : word for i, word in enumerate(self.word_count.index)}
         
         # getting rid off unnecessary words in sentences
         self.clean_sentences = [[self.dictionnary[word] for word in sentence if word in self.dictionnary.keys()]\
                                 for sentence in sentences]
         
-#        self.clean_sentences = [[self.dictionnary[word] for word in sentence] for sentence in self.clean_sentences]
+        self.pairs = [(word1, word2) for sentence in self.clean_sentences for i1, word1 in enumerate(sentence) for i2, word2 in enumerate(sentence) if (np.abs(i1-i2) <= winSize) and i1!=i2]
         
-        # getting contexts
-        self.contexts = []
-        for sentence in sentences:
-            if len(sentences)>= winSize*2 +1:
-                for i in range(len(sentences)-2*winSize):
-                    self.contexts.append((sentences[i+winSize], sentences[i:i+2*winSize+1]))
-                    
+        self.length_of_voc = len(self.dictionnary.keys())
         
+        self.counting_matrix = np.zeros((self.length_of_voc, self.length_of_voc))
         
-        
+        for pair in self.pairs:
+            self.counting_matrix[pair[0], pair[1]]+=1
+            
+        for i in range(self.length_of_voc):
+            sum_i = sum(self.counting_matrix[:,i])
+            self.counting_matrix[:,i]/=sum_i
+       
         
         #raise NotImplementedError('implement it!')
 
 
     def train(self,stepsize, epochs):
-        raise NotImplementedError('implement it!')
+        self.input_weigth = np.random.uniform(size = (self.length_of_voc, self.nEmbed))
+        self.output_weight = np.random.uniform(size = (self.nEmbed, self.length_of_voc))
+        
+        # raise NotImplementedError('implement it!')
 
     def save(self,path):
         raise NotImplementedError('implement it!')
@@ -140,7 +148,7 @@ class mySkipGram:
 #            print(sg.similarity(a,b))
 
 
-path = "C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/txt.parag" + "/total_data.txt"
+path = "C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples" + "/total_data.txt"
 
 sentences = text2sentences(path)
 
