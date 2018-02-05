@@ -101,12 +101,30 @@ class mySkipGram:
        
         
         #raise NotImplementedError('implement it!')
-
+    def softmax(self, x):
+        decreased_x = x - np.max(x)
+        return np.exp(decreased_x)/np.sum(np.exp(decreased_x))
+    
+    def mse(self, true_values, predictions):
+        return np.mean(np.power(true_values - predictions, 2))
 
     def train(self,stepsize, epochs):
-        self.input_weigth = np.random.uniform(size = (self.length_of_voc, self.nEmbed))
-        self.output_weight = np.random.uniform(size = (self.nEmbed, self.length_of_voc))
-        
+        self.input_weight = np.random.uniform(size = (self.length_of_voc, self.nEmbed))
+        self.hidden_weight = np.random.uniform(size = (self.nEmbed, self.length_of_voc))
+        # running through the epochs
+        for epoch in range(epochs):
+            # running through the training samples
+            for word in range(self.length_of_voc):
+                # creating the input vector
+                input_vector = np.zeros((1, self.length_of_voc))
+                input_vector[:,word] = 1
+                # getting the output vector
+                output_vector = self.counting_matrix[:,word].T
+                # computing output
+                first_step = np.dot(input_vector, self.input_weight)
+                second_step = np.dot(first_step, self.hidden_weight)
+                output_predictions = self.softmax(second_step)
+                error = self.mse(output_vector, output_predictions)
         # raise NotImplementedError('implement it!')
 
     def save(self,path):
