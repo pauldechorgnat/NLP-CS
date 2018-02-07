@@ -206,16 +206,15 @@ class mySkipGram:
         if (word1 not in self.dictionnary.keys()):
             print("'{}' is not in the original corpus.".format(word1))
             pass
-        if (word2 not in self.dictionnary.keys()):
+        elif (word2 not in self.dictionnary.keys()):
             print("'{}' is not in the original corpus.".format(word2))
             pass
-        
-        word1_vector = self.input2hidden_weights[self.dictionnary[word1],:]
-        word2_vector = self.input2hidden_weights[self.dictionnary[word2],:]
-        cosine_distance = np.dot(word1_vector, word2_vector)/ np.linalg.norm(word1_vector)/np.linalg.norm(word2_vector)
-        
-        # cosine distance is between -1 and 1 so we need to 
-        return (1+cosine_distance)/2
+        else:
+           word1_vector = self.input2hidden_weights[self.dictionnary[word1],:]
+           word2_vector = self.input2hidden_weights[self.dictionnary[word2],:]
+           cosine_distance = np.dot(word1_vector, word2_vector)/ np.linalg.norm(word1_vector)/np.linalg.norm(word2_vector)
+           # cosine distance is between -1 and 1 so we need to 
+           return (1+cosine_distance)/2
     
     @staticmethod
     def load(path):
