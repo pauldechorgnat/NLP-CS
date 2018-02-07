@@ -27,7 +27,7 @@ from sklearn.preprocessing import normalize
 
 
 __authors__ = ['paul_dechorgnat','victor_terras-dober','dimitri_trotignon']
-__emails__  = ['fatherchristmoas@northpole.dk','toothfairy@blackforest.no','easterbunny@greenfield.de']
+__emails__  = ['paul.dechorgnat@student.ecp.fr','victor.terrasdober@essec.edu','dimitri.trotignon@essec.edu']
 
 def text2sentences(path):
     # feel free to make a better tokenization/pre-processing
@@ -154,9 +154,7 @@ class mySkipGram:
         
         # running through the epochs
         for epoch in range(epochs):
-            if epoch % 10 == 0:
-                print("Epoch n° : {}/{} - {}".format(epoch+1, epochs, str(datetime.datetime.now())))
-            
+            print("Epoch n° : {}/{} - {}".format(epoch+1, epochs, str(datetime.datetime.now())))
             # running through contexts
             for target_word, context in prog_bar(self.contexts):
                 
@@ -241,36 +239,41 @@ class mySkipGram:
         print("Model loaded")
         return new_skip_gram
 
+###################################################################
+############################ PROD MODE ############################
+###################################################################
 
-#if __name__ == '__main__':
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--text', help='path containing training data', required=True)
+    parser.add_argument('--model', help='path to store/read model (when training/testing)', required=True)
+    parser.add_argument('--test', help='enters test mode', action='store_true')
+
+    opts = parser.parse_args()
+
+    if not opts.test:
+        sentences = text2sentences(opts.text)
+        sg = mySkipGram(sentences)
+        sg.train(.001, 10)
+        sg.save(opts.model)
+
+    else:
+        pairs = loadPairs(opts.text)
+
+        sg = mySkipGram.load(opts.model)
+        for a,b,_ in pairs:
+            print(sg.similarity(a,b))
+###################################################################
+############################ DEV MODE #############################
+###################################################################
+
+#path = "C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/total_data.txt"
 #
-#    parser = argparse.ArgumentParser()
-#    parser.add_argument('--text', help='path containing training data', required=True)
-#    parser.add_argument('--model', help='path to store/read model (when training/testing)', required=True)
-#    parser.add_argument('--test', help='enters test mode', action='store_true')
+#sentences = text2sentences(path)
 #
-#    opts = parser.parse_args()
+#model = mySkipGram(sentences)
+#model.save("C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/first_model.txt")
 #
-#    if not opts.test:
-#        sentences = text2sentences(opts.text)
-#        sg = mySkipGram(sentences)
-#        sg.train()
-#        sg.save(opts.model)
-#
-#    else:
-#        pairs = loadPairs(opts.text)
-#
-#        sg = mSkipGram.load(opts.model)
-#        for a,b,_ in pairs:
-#            print(sg.similarity(a,b))
-
-
-path = "C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/total_data.txt"
-
-sentences = text2sentences(path)
-
-model = mySkipGram(sentences)
-model.save("C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/first_model.txt")
-
-model2 = mySkipGram.load("C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/first_model.txt")
-print("J'ai fini pour le moment")
+#model2 = mySkipGram.load("C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/first_model.txt")
+#print("J'ai fini pour le moment")

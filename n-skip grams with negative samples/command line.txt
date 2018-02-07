@@ -1,0 +1,1 @@
+python project1.py --text total_data.txt --model first_model.txt
