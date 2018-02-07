@@ -32,7 +32,7 @@ __emails__  = ['paul.dechorgnat@student.ecp.fr','victor.terrasdober@essec.edu','
 def text2sentences(path):
     # feel free to make a better tokenization/pre-processing
     sentences = []
-    with open(path) as f:
+    with open(path, 'r', encoding = "utf-8") as f:
         for l in f:
             sentences.append( "".join((char if char.isalpha() else " ") for char in l).lower().split() )
     return sentences
@@ -189,7 +189,7 @@ class mySkipGram:
         parameters['hidden2output_weights'] = parameters['hidden2output_weights'].tolist()
         
         # writing parameters
-        with open(path, 'w') as file:
+        with open(path, 'w', encoding = "utf-8") as file:
             file.write(json.dumps(parameters))
         file.close()
         print("Model saved")
@@ -220,7 +220,7 @@ class mySkipGram:
     @staticmethod
     def load(path):
         # reading parameters
-        with open(path, 'r') as file:
+        with open(path, 'r', encoding = "utf-8") as file:
             parameters = json.load(file)
         file.close
         # instantiating without calling __init__ constructor
