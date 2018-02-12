@@ -13,7 +13,7 @@ import pandas as pd
 
 import datetime
 
-### Importing a new package for visualization => to remove later...
+### Importing a new package for visualization => to remove later?
 from tqdm import tqdm as prog_bar
 
 ### we are going to use the json library to save the model 
@@ -44,7 +44,7 @@ def loadPairs(path):
 
 
 class mySkipGram:
-    def __init__(self, sentences, nEmbed=100, negativeRate=5, winSize = 2, minCount = 15):
+    def __init__(self, sentences, nEmbed=200, negativeRate=5, winSize = 3, minCount = 15):
         
         # negative rate is the number of negative examples we need to create for one positive example
         # nEmbed is the number of neurons within the embedding layer
@@ -254,7 +254,7 @@ if __name__ == '__main__':
     if not opts.test:
         sentences = text2sentences(opts.text)
         sg = mySkipGram(sentences)
-        sg.train(.001, 10)
+        sg.train(.001, 30)
         sg.save(opts.model)
 
     else:
@@ -266,12 +266,14 @@ if __name__ == '__main__':
 ###################################################################
 ############################ DEV MODE #############################
 ###################################################################
-
-#path = "C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/total_data.txt"
 #
-#sentences = text2sentences(path)
+#path = "/home/paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/" 
+#
+#sentences = text2sentences(path + "formatted_train_corpus.txt")
 #
 #model = mySkipGram(sentences)
+#
+#
 #model.save("C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/first_model.txt")
 #
 #model2 = mySkipGram.load("C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/first_model.txt")
