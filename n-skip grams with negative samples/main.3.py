@@ -263,18 +263,3 @@ if __name__ == '__main__':
         sg = mySkipGram.load(opts.model)
         for a,b,_ in pairs:
             print(sg.similarity(a,b))
-###################################################################
-############################ DEV MODE #############################
-###################################################################
-#
-#path = "/home/paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/" 
-#
-#sentences = text2sentences(path + "formatted_train_corpus.txt")
-#
-#model = mySkipGram(sentences)
-#
-#
-#model.save("C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/first_model.txt")
-#
-#model2 = mySkipGram.load("C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/first_model.txt")
-#print("J'ai fini pour le moment")
