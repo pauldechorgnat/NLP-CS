@@ -13,7 +13,11 @@ import pandas as pd
 
 import datetime
 
+<<<<<<< HEAD:n-skip grams with negative samples/project1.py
+### Importing a new package for visualization => to remove later...
+=======
 ### Importing a new package for visualization => to remove later?
+>>>>>>> 9e4e526ed1e556d7a78f0fe0339a4ddcec32bdfc:n-skip grams with negative samples/main.3.py
 from tqdm import tqdm as prog_bar
 
 ### we are going to use the json library to save the model 
@@ -44,7 +48,11 @@ def loadPairs(path):
 
 
 class mySkipGram:
+<<<<<<< HEAD:n-skip grams with negative samples/project1.py
+    def __init__(self, sentences, nEmbed=100, negativeRate=5, winSize = 2, minCount = 15):
+=======
     def __init__(self, sentences, nEmbed=200, negativeRate=5, winSize = 3, minCount = 15):
+>>>>>>> 9e4e526ed1e556d7a78f0fe0339a4ddcec32bdfc:n-skip grams with negative samples/main.3.py
         
         # negative rate is the number of negative examples we need to create for one positive example
         # nEmbed is the number of neurons within the embedding layer
@@ -254,7 +262,11 @@ if __name__ == '__main__':
     if not opts.test:
         sentences = text2sentences(opts.text)
         sg = mySkipGram(sentences)
+<<<<<<< HEAD:n-skip grams with negative samples/project1.py
+        sg.train(.001, 10)
+=======
         sg.train(.001, 30)
+>>>>>>> 9e4e526ed1e556d7a78f0fe0339a4ddcec32bdfc:n-skip grams with negative samples/main.3.py
         sg.save(opts.model)
 
     else:
@@ -263,3 +275,19 @@ if __name__ == '__main__':
         sg = mySkipGram.load(opts.model)
         for a,b,_ in pairs:
             print(sg.similarity(a,b))
+<<<<<<< HEAD:n-skip grams with negative samples/project1.py
+###################################################################
+############################ DEV MODE #############################
+###################################################################
+
+#path = "C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/total_data.txt"
+#
+#sentences = text2sentences(path)
+#
+#model = mySkipGram(sentences)
+#model.save("C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/first_model.txt")
+#
+#model2 = mySkipGram.load("C:/Users/Paul/Desktop/MSc DSBA/10. Natural Language Processing/Github/NLP-CS/n-skip grams with negative samples/first_model.txt")
+#print("J'ai fini pour le moment")
+=======
+>>>>>>> 9e4e526ed1e556d7a78f0fe0339a4ddcec32bdfc:n-skip grams with negative samples/main.3.py
