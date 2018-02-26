@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import nltk
 import keras.backend as K
+from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.optimizers import Adam
 
@@ -16,8 +17,9 @@ except :
 from nltk.corpus import stopwords
 
 class Classifier:
-    def __init__(self, layers = [20, 20, 10]):
-        self.layers = layers
+    def __init__(self, layers = [20, 20, 10], size_of_voc = 300):
+        self.first_layer = layers[0]
+        self.layers = layers[1:]
     """Le Classifier"""
     def train(self, trainfile):
         """Trains the classifier model on the training set stored in file trainfile"""
@@ -56,10 +58,20 @@ class Classifier:
         self.categories = self.label_categories.columns
         self.label_sentiment = train_data['sentiment']
         
+        # perform wordcount
+        # ça fait jamais de mal ...
+        word_count = {}
+        for row in train_data['stems']:
+            for word in row:
+                if word in word_count.keys():
+                    word_count[word]+=1
+                else:
+                    word_count[word]=1
+                
+        self.vocabulary = np.unique(word_count.keys())
+        self.word_count = word_count
         
-        # creating a model
         
-
     def predict(self, datafile):
         """Predicts class labels for the input instances in file 'datafile'
         Returns the list of predicted labels
@@ -73,5 +85,4 @@ class Classifier:
 classifier = Classifier()
 classifier.train("../data/traindata.csv")
 
-print(classifier.categories)
-print(classifier.label_categories)
+len(classifier.vocabulary)
