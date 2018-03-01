@@ -6,14 +6,11 @@ import keras.backend as K
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.optimizers import Adam
+import spacy
 
 # loading the stopwords library
-try :
-    nltk.download('stopwords')
-
-except :
-    print("bah non en fait")
-
+nltk.download('stopwords')
+nlp = spacy.load('en_core_web_lg')
 from nltk.corpus import stopwords
 
 class Classifier:
@@ -50,6 +47,15 @@ class Classifier:
         # 1 is for positive, 0 is for negative
         train_data['sentiment'] = (train_data['sentiment'] == "positive")*1
         
+        def get_word_embeddings(stems):
+            vectors = []
+            for stem in stems: 
+                token = nlp(stem)
+                vectors.append(token.vector)
+            return vectors
+        
+        train_data['vectors'] = train_data['stems'].apply(get_word_embeddings)
+        
         # Storing the training data into an attribute of the Classifier
         self.data_train = train_data
         
@@ -57,7 +63,7 @@ class Classifier:
         self.label_categories = pd.get_dummies(train_data['subject'])
         self.categories = self.label_categories.columns
         self.label_sentiment = train_data['sentiment']
-        
+        """
         # perform wordcount
         # ça fait jamais de mal ...
         word_count = {}
@@ -70,7 +76,7 @@ class Classifier:
                 
         self.vocabulary = np.unique(word_count.keys())
         self.word_count = word_count
-        
+        """
         
     def predict(self, datafile):
         """Predicts class labels for the input instances in file 'datafile'
@@ -84,5 +90,3 @@ class Classifier:
 ####### DEV MODE #####
 classifier = Classifier()
 classifier.train("../data/traindata.csv")
-
-len(classifier.vocabulary)
